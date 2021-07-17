@@ -79,6 +79,25 @@ class Customer {
       );
     }
   }
-}
+  static async search(name) {
+    if (name.length < 2) throw new Error("Please enter a first and last name");
+    let first = name[0];
+    console.log(first);
+    let last = name[1];
+    first = first.replace(first[0], first[0].toUpperCase());
+    last = last.replace(last[0], last[0].toUpperCase());
+    const results = await db.query(
+      `SELECT id FROM customers WHERE last_name=$1 AND first_name=$2`,
+      [last, first]
+    );
+    const customer = results.rows[0];
 
+    if (customer === undefined) {
+      const err = new Error(`No such customer: ${first} ${last}`);
+      err.status = 404;
+      throw err;
+    }
+    return await Customer.get(results.rows[0].id);
+  }
+}
 module.exports = Customer;
